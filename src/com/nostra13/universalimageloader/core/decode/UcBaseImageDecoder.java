@@ -1,45 +1,147 @@
-/*******************************************************************************
- * Copyright 2011-2013 Sergey Tarasevich
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *******************************************************************************/
 
 package com.nostra13.universalimageloader.core.decode;
 
 import com.nostra13.universalimageloader.core.download.ImageDownloader.Scheme;
+import com.uc.UCAssert;
 
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.BitmapFactory.Options;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.provider.MediaStore;
-import android.provider.MediaStore.Images.Thumbnails;
-import android.util.Log;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
-/**
- * Decodes images to {@link Bitmap}, scales them to needed size
- * 
- * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
- * @since 1.8.3
- * @see ImageDecodingInfo
- */
 public class UcBaseImageDecoder implements ImageDecoder {
 
-    private static final String TAG = "UcBaseImageDecoder";
+    private static final byte MEDIA_TYPE_IMAGE = 1;
+
+    private static final byte MEDIA_TYPE_VIDEO = 2;
+
+    private static final List<QueryInfo> sQueryList = new ArrayList<QueryInfo>();
+
+    private static final int MINI_KIND_THUMBNAIL_IMAGE_WIDTH = 512;
+
+    private static final int MINI_KIND_THUMBNAIL_IMAGE_HEIGHT = 384;
+
+    static {
+        sQueryList.add(new QueryInfo("content://media/external/images/media",
+                MediaStore.Images.Thumbnails._ID, MediaStore.Images.Thumbnails.DATA,
+                MEDIA_TYPE_IMAGE));
+
+        // sQueryList
+        // .add(new QueryInfo("content://media/external/video/media",
+        // MediaStore.Video.Thumbnails._ID, MediaStore.Video.Thumbnails.DATA,
+        // MEDIA_TYPE_VIDEO));
+    }
 
     public UcBaseImageDecoder(boolean loggingEnabled) {
+    }
+
+    private class ResultInfo {
+
+        private int mId;
+
+        private byte mMediaType;
+
+        private boolean mSuccess;
+
+        public ResultInfo() {
+
+        }
+
+        public ResultInfo(int aId, byte aMediaType, boolean aSuccess) {
+            super();
+            mId = aId;
+            mMediaType = aMediaType;
+            mSuccess = aSuccess;
+        }
+
+        public int getId() {
+            return mId;
+        }
+
+        public void setId(int aId) {
+            mId = aId;
+        }
+
+        public byte getMediaType() {
+            return mMediaType;
+        }
+
+        public void setMediaType(byte aMediaType) {
+            mMediaType = aMediaType;
+        }
+
+        public boolean isSuccess() {
+            return mSuccess;
+        }
+
+        public void setSuccess(boolean aSuccess) {
+            mSuccess = aSuccess;
+        }
+
+    }
+
+    private static class QueryInfo {
+        private String mURI;
+
+        private String mColumnId;
+
+        private String mColumnData;
+
+        private byte mMediaType;
+
+        public QueryInfo(String aURI, String aColumnId, String aColumnData, byte aMediaType) {
+            super();
+            mURI = aURI;
+            mColumnId = aColumnId;
+            mColumnData = aColumnData;
+            mMediaType = aMediaType;
+        }
+
+        public String getURI() {
+            return mURI;
+        }
+
+        public void setURI(String aURI) {
+            mURI = aURI;
+        }
+
+        public String getColumnId() {
+            return mColumnId;
+        }
+
+        public void setColumnId(String aColumnId) {
+            mColumnId = aColumnId;
+        }
+
+        public String getColumnData() {
+            return mColumnData;
+        }
+
+        public void setColumnData(String aColumnData) {
+            mColumnData = aColumnData;
+        }
+
+        public byte getMediaType() {
+            return mMediaType;
+        }
+
+        public void setMediaType(byte aMediaType) {
+            mMediaType = aMediaType;
+        }
+
     }
 
     private int calculateInSampleSize(int imgWidth, int imgHeight, int reqWidth, int reqHeight) {
@@ -65,31 +167,57 @@ public class UcBaseImageDecoder implements ImageDecoder {
         return inSampleSize;
     }
 
-    private Bitmap getBitmapByImageId(int aImageId) {
+    private Bitmap getBitmap(byte aMediaType, int aId, Options aDecodingOptions) {
+        Bitmap ret = null;
 
-        BitmapFactory.Options option = new BitmapFactory.Options();
-        option.inSampleSize = this.calculateInSampleSize(512, 384, 145, 120);
+        switch (aMediaType) {
+            case MEDIA_TYPE_IMAGE: {
+                ret = this.getBitmapByImageId(aId, aDecodingOptions);
+                break;
+            }
+            case MEDIA_TYPE_VIDEO: {
+                ret = this.getBitmapByVideoId(aId, aDecodingOptions);
+                break;
+            }
+            default: {
+                UCAssert.mustOk(false);
+                break;
+            }
+        }
 
-        return MediaStore.Images.Thumbnails.getThumbnail(CommonContext.getContentResolver(),
-                aImageId, Thumbnails.MINI_KIND, option);
+        return ret;
     }
 
-    private Bitmap getThumbnailByImageFilePath(String aImageFilePath) {
-        Bitmap bitmap = null;
+    private Bitmap getBitmapByImageId(int aId, Options aDecodingOptions) {
+
+        return MediaStore.Images.Thumbnails.getThumbnail(CommonContext.getContentResolver(), aId,
+                MediaStore.Images.Thumbnails.MINI_KIND, aDecodingOptions);
+    }
+
+    private Bitmap getBitmapByVideoId(int aId, Options aDecodingOptions) {
+
+        return MediaStore.Video.Thumbnails.getThumbnail(CommonContext.getContentResolver(), aId,
+                MediaStore.Video.Thumbnails.MINI_KIND, aDecodingOptions);
+    }
+
+    private ResultInfo getResultInfo(QueryInfo aQueryInfo, String aFilePath) {
+
+        ResultInfo ret = new ResultInfo();
+        ret.setMediaType(aQueryInfo.getMediaType());
 
         try {
 
             String[] projection = new String[] {
-                    MediaStore.Images.Thumbnails._ID, MediaStore.Images.Thumbnails.DATA
+                    aQueryInfo.getColumnId(), aQueryInfo.getColumnData()
             };
 
-            Uri uri = Uri.parse("content://media/external/images/media");
+            Uri uri = Uri.parse(aQueryInfo.getURI());
 
             if (null != uri) {
 
                 Cursor cursor = CommonContext.getContentResolver().query(uri, projection,
-                        MediaStore.Images.Thumbnails.DATA + " = ?", new String[] {
-                            aImageFilePath
+                        aQueryInfo.getColumnData() + " = ?", new String[] {
+                            aFilePath
                         }, null);
 
                 if (null != cursor) {
@@ -99,12 +227,12 @@ public class UcBaseImageDecoder implements ImageDecoder {
                         cursor.moveToFirst();
 
                         int imageId = cursor.getInt(0);
-                        cursor.close();
-                        bitmap = this.getBitmapByImageId(imageId);
 
-                    } else {
-                        throw new RuntimeException("image not found");
+                        ret.setId(imageId);
+                        ret.setSuccess(true);
                     }
+
+                    cursor.close();
 
                 } else {
                     throw new RuntimeException("cursor is null.");
@@ -117,26 +245,155 @@ public class UcBaseImageDecoder implements ImageDecoder {
             e.printStackTrace();
         }
 
-        return bitmap;
+        return ret;
+
+    }
+
+    private Bitmap getThumbnail(String aFilePath, Options aDecodingOptions) {
+
+        UCAssert.mustOk(null != aFilePath);
+
+        Bitmap ret = null;
+
+        for (QueryInfo queryInfo : sQueryList) {
+            ResultInfo resultInfo = this.getResultInfo(queryInfo, aFilePath);
+
+            if (resultInfo.isSuccess()) {
+                ret = this.getBitmap(resultInfo.getMediaType(), resultInfo.getId(),
+                        aDecodingOptions);
+                break;
+            }
+        }
+
+        return ret;
+    }
+
+    private Bitmap getApkIcon(String aApkPath) {
+
+        UCAssert.mustOk(null != aApkPath);
+        UCAssert.mustOk(aApkPath.toLowerCase(Locale.getDefault()).endsWith(".apk"));
+
+        Bitmap ret = null;
+
+        PackageInfo packageInfo = CommonContext.getContext().getPackageManager()
+                .getPackageArchiveInfo(aApkPath, PackageManager.GET_ACTIVITIES);
+
+        if (packageInfo != null) {
+            ApplicationInfo appInfo = packageInfo.applicationInfo;
+            if (Build.VERSION.SDK_INT >= 8) {
+                appInfo.sourceDir = aApkPath;
+                appInfo.publicSourceDir = aApkPath;
+            }
+            Drawable icon = appInfo.loadIcon(CommonContext.getContext().getPackageManager());
+            ret = ((BitmapDrawable)icon).getBitmap();
+        }
+
+        UCAssert.mustOk(null != ret);
+
+        return ret;
+    }
+
+    /**
+     * @param aExp such as:"145x120".
+     * @return array of width and height.
+     */
+    private int[] getRequestSize(String aExp) {
+        String[] array = aExp.split("x");
+
+        UCAssert.mustOk(2 == array.length);
+
+        return new int[] {
+                Integer.valueOf(array[0]), Integer.valueOf(array[1])
+        };
+
+    }
+
+    private int[] getBitmapSize(String aFilePath) {
+
+        BitmapFactory.Options option = new BitmapFactory.Options();
+        option.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(aFilePath, option);
+
+        return new int[] {
+                option.outWidth, option.outHeight
+        };
+
+    }
+
+    private int[] getRequestSizeByImageKey(String aImageKey) {
+
+        UCAssert.mustOk(null != aImageKey);
+
+        String oriFilePath = Scheme.FILE.crop(aImageKey);
+        String sizeExp = oriFilePath.substring(oriFilePath.lastIndexOf('_') + 1,
+                oriFilePath.length());
+        int[] requestSize = this.getRequestSize(sizeExp);
+
+        return requestSize;
     }
 
     @Override
     public Bitmap decode(ImageDecodingInfo imageDecodingInfo) throws IOException {
 
-        String imagePath = Scheme.FILE.crop(imageDecodingInfo.getImageKey());
+        Bitmap ret = null;
 
-        imagePath = imagePath.substring(0, imagePath.lastIndexOf('_'));
+        String filePath = Scheme.FILE.crop(imageDecodingInfo.getImageKey());
+        filePath = filePath.substring(0, filePath.lastIndexOf('_'));
 
-        Bitmap bitmap = this.getThumbnailByImageFilePath(imagePath);
+        String filePathL = filePath.toLowerCase(Locale.getDefault());
 
-        if (null == bitmap) {
-            BitmapFactory.Options option = new BitmapFactory.Options();
-            option.inSampleSize = this.calculateInSampleSize(512, 384, 145, 120);
-            bitmap = BitmapFactory.decodeFile(imagePath, option);
+        if (filePathL.endsWith(".apk")) {
+            ret = this.getApkIcon(filePath);
+        } else {
+
+            int[] requestSize = this.getRequestSizeByImageKey(imageDecodingInfo.getImageKey());
+
+            imageDecodingInfo.getDecodingOptions().inSampleSize = this.calculateInSampleSize(
+                    MINI_KIND_THUMBNAIL_IMAGE_WIDTH, MINI_KIND_THUMBNAIL_IMAGE_HEIGHT,
+                    requestSize[0], requestSize[1]);
+
+            ret = this.getThumbnail(filePath, imageDecodingInfo.getDecodingOptions());
+
+            if (null == ret) {
+                if (filePathL.endsWith(".png") || filePathL.endsWith(".jpg")
+                        || filePathL.endsWith(".jpeg") || filePathL.endsWith(".gif")
+                        || filePathL.endsWith(".tif") || filePathL.endsWith(".bmp")
+                        || filePathL.endsWith(".webp")) {
+
+                    int[] bitmapSize = this.getBitmapSize(filePath);
+
+                    imageDecodingInfo.getDecodingOptions().inSampleSize = this
+                            .calculateInSampleSize(bitmapSize[0], bitmapSize[1], requestSize[0],
+                                    requestSize[1]);
+
+                    ret = BitmapFactory
+                            .decodeFile(filePath, imageDecodingInfo.getDecodingOptions());
+
+                }
+            }
         }
 
-        return bitmap;
-
+        return ret;
     }
+
+    // @Override
+    // public Bitmap decode(ImageDecodingInfo imageDecodingInfo) throws
+    // IOException {
+    //
+    // String imagePath = Scheme.FILE.crop(imageDecodingInfo.getImageKey());
+    //
+    // imagePath = imagePath.substring(0, imagePath.lastIndexOf('_'));
+    //
+    // Bitmap bitmap = this.getThumbnailByImageFilePath(imagePath);
+    //
+    // if (null == bitmap) {
+    // BitmapFactory.Options option = new BitmapFactory.Options();
+    // option.inSampleSize = this.calculateInSampleSize(512, 384, 145, 120);
+    // bitmap = BitmapFactory.decodeFile(imagePath, option);
+    // }
+    //
+    // return bitmap;
+    //
+    // }
 
 }
