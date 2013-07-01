@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
+
 package com.nostra13.universalimageloader.core;
 
 import java.util.concurrent.locks.ReentrantLock;
@@ -34,21 +35,29 @@ import com.nostra13.universalimageloader.core.assist.MemoryCacheUtil;
  */
 final class ImageLoadingInfo {
 
-	final String uri;
-	final String memoryCacheKey;
-	final ImageView imageView;
-	final ImageSize targetSize;
-	final DisplayImageOptions options;
-	final ImageLoadingListener listener;
-	final ReentrantLock loadFromUriLock;
+    final String uri;
 
-	public ImageLoadingInfo(String uri, ImageView imageView, ImageSize targetSize, String memoryCacheKey, DisplayImageOptions options, ImageLoadingListener listener, ReentrantLock loadFromUriLock) {
-		this.uri = uri;
-		this.imageView = imageView;
-		this.targetSize = targetSize;
-		this.options = options;
-		this.listener = listener;
-		this.loadFromUriLock = loadFromUriLock;
-		this.memoryCacheKey = memoryCacheKey;
-	}
+    final String memoryCacheKey;
+
+    final ImageView imageView;
+
+    final ImageSize targetSize;
+
+    final DisplayImageOptions options;
+
+    final ImageLoadingListener listener;
+
+    final ReentrantLock loadFromUriLock;
+
+    public ImageLoadingInfo(String uri, ImageView imageView, ImageSize targetSize,
+            String memoryCacheKey, DisplayImageOptions options, ImageLoadingListener listener,
+            ReentrantLock loadFromUriLock) {
+        this.uri = uri;
+        this.imageView = imageView;
+        this.targetSize = targetSize;
+        this.options = options;
+        this.listener = listener;
+        this.loadFromUriLock = loadFromUriLock;
+        this.memoryCacheKey = memoryCacheKey;
+    }
 }

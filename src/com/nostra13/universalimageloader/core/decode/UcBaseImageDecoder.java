@@ -270,8 +270,8 @@ public class UcBaseImageDecoder implements ImageDecoder {
 
     private Bitmap getApkIcon(String aApkPath) {
 
-        UCAssert.mustOk(null != aApkPath);
-        UCAssert.mustOk(aApkPath.toLowerCase(Locale.getDefault()).endsWith(".apk"));
+        // UCAssert.mustOk(null != aApkPath);
+        // UCAssert.mustOk(aApkPath.toLowerCase(Locale.getDefault()).endsWith(".apk"));
 
         Bitmap ret = null;
 

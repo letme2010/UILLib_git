@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
+
 package com.nostra13.universalimageloader.core;
 
 import android.graphics.Bitmap;
@@ -23,33 +24,38 @@ import com.nostra13.universalimageloader.core.process.BitmapProcessor;
 import com.nostra13.universalimageloader.utils.L;
 
 /**
- * Presents process'n'display image task. Processes image {@linkplain Bitmap} and display it in {@link ImageView} using
- * {@link DisplayBitmapTask}.
+ * Presents process'n'display image task. Processes image {@linkplain Bitmap}
+ * and display it in {@link ImageView} using {@link DisplayBitmapTask}.
  * 
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
  * @since 1.8.0
  */
 class ProcessAndDisplayImageTask implements Runnable {
 
-	private static final String LOG_POSTPROCESS_IMAGE = "PostProcess image before displaying [%s]";
+    private static final String LOG_POSTPROCESS_IMAGE = "PostProcess image before displaying [%s]";
 
-	private final ImageLoaderEngine engine;
-	private final Bitmap bitmap;
-	private final ImageLoadingInfo imageLoadingInfo;
-	private final Handler handler;
+    private final ImageLoaderEngine engine;
 
-	public ProcessAndDisplayImageTask(ImageLoaderEngine engine, Bitmap bitmap, ImageLoadingInfo imageLoadingInfo, Handler handler) {
-		this.engine = engine;
-		this.bitmap = bitmap;
-		this.imageLoadingInfo = imageLoadingInfo;
-		this.handler = handler;
-	}
+    private final Bitmap bitmap;
 
-	@Override
-	public void run() {
-		if (engine.configuration.loggingEnabled) L.i(LOG_POSTPROCESS_IMAGE, imageLoadingInfo.memoryCacheKey);
-		BitmapProcessor processor = imageLoadingInfo.options.getPostProcessor();
-		final Bitmap processedBitmap = processor.process(bitmap);
-		handler.post(new DisplayBitmapTask(processedBitmap, imageLoadingInfo, engine));
-	}
+    private final ImageLoadingInfo imageLoadingInfo;
+
+    private final Handler handler;
+
+    public ProcessAndDisplayImageTask(ImageLoaderEngine engine, Bitmap bitmap,
+            ImageLoadingInfo imageLoadingInfo, Handler handler) {
+        this.engine = engine;
+        this.bitmap = bitmap;
+        this.imageLoadingInfo = imageLoadingInfo;
+        this.handler = handler;
+    }
+
+    @Override
+    public void run() {
+        if (engine.configuration.loggingEnabled)
+            L.i(LOG_POSTPROCESS_IMAGE, imageLoadingInfo.memoryCacheKey);
+        BitmapProcessor processor = imageLoadingInfo.options.getPostProcessor();
+        final Bitmap processedBitmap = processor.process(bitmap);
+        handler.post(new DisplayBitmapTask(processedBitmap, imageLoadingInfo, engine));
+    }
 }

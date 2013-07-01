@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
+
 package com.nostra13.universalimageloader.core.decode;
 
 import java.io.IOException;
-
 
 import android.graphics.Bitmap;
 
@@ -29,12 +29,13 @@ import android.graphics.Bitmap;
  */
 public interface ImageDecoder {
 
-	/**
-	 * Decodes image to {@link Bitmap} according target size and other parameters.
-	 * 
-	 * @param imageDecodingInfo 
-	 * @return
-	 * @throws IOException
-	 */
-	Bitmap decode(ImageDecodingInfo imageDecodingInfo) throws IOException;
+    /**
+     * Decodes image to {@link Bitmap} according target size and other
+     * parameters.
+     * 
+     * @param imageDecodingInfo
+     * @return
+     * @throws IOException
+     */
+    Bitmap decode(ImageDecodingInfo imageDecodingInfo) throws IOException;
 }

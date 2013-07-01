@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
+
 package com.nostra13.universalimageloader.core.assist;
 
 import android.widget.AbsListView;
@@ -23,10 +24,13 @@ import android.widget.ListView;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
 /**
- * Listener-helper for {@linkplain AbsListView list views} ({@link ListView}, {@link GridView}) which can
- * {@linkplain ImageLoader#pause() pause ImageLoader's tasks} while list view is scrolling (touch scrolling and/or
+ * Listener-helper for {@linkplain AbsListView list views} ({@link ListView},
+ * {@link GridView}) which can {@linkplain ImageLoader#pause() pause
+ * ImageLoader's tasks} while list view is scrolling (touch scrolling and/or
  * fling). It prevents redundant loadings.<br />
- * Set it to your list view's {@link AbsListView#setOnScrollListener(OnScrollListener) setOnScrollListener(...)}.<br />
+ * Set it to your list view's
+ * {@link AbsListView#setOnScrollListener(OnScrollListener)
+ * setOnScrollListener(...)}.<br />
  * This listener can wrap your custom {@linkplain OnScrollListener listener}.
  * 
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
@@ -34,65 +38,75 @@ import com.nostra13.universalimageloader.core.ImageLoader;
  */
 public class PauseOnScrollListener implements OnScrollListener {
 
-	private ImageLoader imageLoader;
+    private ImageLoader imageLoader;
 
-	private final boolean pauseOnScroll;
-	private final boolean pauseOnFling;
-	private final OnScrollListener externalListener;
+    private final boolean pauseOnScroll;
 
-	/**
-	 * Constructor
-	 * 
-	 * @param imageLoader {@linkplain ImageLoader} instance for controlling
-	 * @param pauseOnScroll Whether {@linkplain ImageLoader#pause() pause ImageLoader} during touch scrolling
-	 * @param pauseOnFling Whether {@linkplain ImageLoader#pause() pause ImageLoader} during fling
-	 */
-	public PauseOnScrollListener(ImageLoader imageLoader, boolean pauseOnScroll, boolean pauseOnFling) {
-		this(imageLoader, pauseOnScroll, pauseOnFling, null);
-	}
+    private final boolean pauseOnFling;
 
-	/**
-	 * Constructor
-	 * 
-	 * @param imageLoader {@linkplain ImageLoader} instance for controlling
-	 * @param pauseOnScroll Whether {@linkplain ImageLoader#pause() pause ImageLoader} during touch scrolling
-	 * @param pauseOnFling Whether {@linkplain ImageLoader#pause() pause ImageLoader} during fling
-	 * @param customListener Your custom {@link OnScrollListener} for {@linkplain AbsListView list view} which also will
-	 *            be get scroll events
-	 */
-	public PauseOnScrollListener(ImageLoader imageLoader, boolean pauseOnScroll, boolean pauseOnFling, OnScrollListener customListener) {
-		this.imageLoader = imageLoader;
-		this.pauseOnScroll = pauseOnScroll;
-		this.pauseOnFling = pauseOnFling;
-		externalListener = customListener;
-	}
+    private final OnScrollListener externalListener;
 
-	@Override
-	public void onScrollStateChanged(AbsListView view, int scrollState) {
-		switch (scrollState) {
-			case OnScrollListener.SCROLL_STATE_IDLE:
-				imageLoader.resume();
-				break;
-			case OnScrollListener.SCROLL_STATE_TOUCH_SCROLL:
-				if (pauseOnScroll) {
-					imageLoader.pause();
-				}
-				break;
-			case OnScrollListener.SCROLL_STATE_FLING:
-				if (pauseOnFling) {
-					imageLoader.pause();
-				}
-				break;
-		}
-		if (externalListener != null) {
-			externalListener.onScrollStateChanged(view, scrollState);
-		}
-	}
+    /**
+     * Constructor
+     * 
+     * @param imageLoader {@linkplain ImageLoader} instance for controlling
+     * @param pauseOnScroll Whether {@linkplain ImageLoader#pause() pause
+     *            ImageLoader} during touch scrolling
+     * @param pauseOnFling Whether {@linkplain ImageLoader#pause() pause
+     *            ImageLoader} during fling
+     */
+    public PauseOnScrollListener(ImageLoader imageLoader, boolean pauseOnScroll,
+            boolean pauseOnFling) {
+        this(imageLoader, pauseOnScroll, pauseOnFling, null);
+    }
 
-	@Override
-	public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-		if (externalListener != null) {
-			externalListener.onScroll(view, firstVisibleItem, visibleItemCount, totalItemCount);
-		}
-	}
+    /**
+     * Constructor
+     * 
+     * @param imageLoader {@linkplain ImageLoader} instance for controlling
+     * @param pauseOnScroll Whether {@linkplain ImageLoader#pause() pause
+     *            ImageLoader} during touch scrolling
+     * @param pauseOnFling Whether {@linkplain ImageLoader#pause() pause
+     *            ImageLoader} during fling
+     * @param customListener Your custom {@link OnScrollListener} for
+     *            {@linkplain AbsListView list view} which also will be get
+     *            scroll events
+     */
+    public PauseOnScrollListener(ImageLoader imageLoader, boolean pauseOnScroll,
+            boolean pauseOnFling, OnScrollListener customListener) {
+        this.imageLoader = imageLoader;
+        this.pauseOnScroll = pauseOnScroll;
+        this.pauseOnFling = pauseOnFling;
+        externalListener = customListener;
+    }
+
+    @Override
+    public void onScrollStateChanged(AbsListView view, int scrollState) {
+        switch (scrollState) {
+            case OnScrollListener.SCROLL_STATE_IDLE:
+                imageLoader.resume();
+                break;
+            case OnScrollListener.SCROLL_STATE_TOUCH_SCROLL:
+                if (pauseOnScroll) {
+                    imageLoader.pause();
+                }
+                break;
+            case OnScrollListener.SCROLL_STATE_FLING:
+                if (pauseOnFling) {
+                    imageLoader.pause();
+                }
+                break;
+        }
+        if (externalListener != null) {
+            externalListener.onScrollStateChanged(view, scrollState);
+        }
+    }
+
+    @Override
+    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount,
+            int totalItemCount) {
+        if (externalListener != null) {
+            externalListener.onScroll(view, firstVisibleItem, visibleItemCount, totalItemCount);
+        }
+    }
 }
