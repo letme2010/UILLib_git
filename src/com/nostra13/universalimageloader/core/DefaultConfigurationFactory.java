@@ -122,7 +122,7 @@ public class DefaultConfigurationFactory {
             memoryCacheSize = (int)(Runtime.getRuntime().maxMemory() / 8);
         }
         MemoryCacheAware<String, Bitmap> memoryCache;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+        if (Build.VERSION.SDK_INT >= 9) {
             memoryCache = new LruMemoryCache(memoryCacheSize);
         } else {
             memoryCache = new LRULimitedMemoryCache(memoryCacheSize);
