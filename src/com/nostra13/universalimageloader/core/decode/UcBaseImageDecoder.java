@@ -60,13 +60,6 @@ public class UcBaseImageDecoder implements ImageDecoder {
 
         }
 
-        public ResultInfo(int aId, byte aMediaType, boolean aSuccess) {
-            super();
-            mId = aId;
-            mMediaType = aMediaType;
-            mSuccess = aSuccess;
-        }
-
         public int getId() {
             return mId;
         }
@@ -114,32 +107,16 @@ public class UcBaseImageDecoder implements ImageDecoder {
             return mURI;
         }
 
-        public void setURI(String aURI) {
-            mURI = aURI;
-        }
-
         public String getColumnId() {
             return mColumnId;
-        }
-
-        public void setColumnId(String aColumnId) {
-            mColumnId = aColumnId;
         }
 
         public String getColumnData() {
             return mColumnData;
         }
 
-        public void setColumnData(String aColumnData) {
-            mColumnData = aColumnData;
-        }
-
         public byte getMediaType() {
             return mMediaType;
-        }
-
-        public void setMediaType(byte aMediaType) {
-            mMediaType = aMediaType;
         }
 
     }
@@ -243,6 +220,7 @@ public class UcBaseImageDecoder implements ImageDecoder {
             }
         } catch (RuntimeException e) {
             e.printStackTrace();
+            return null;
         }
 
         return ret;
@@ -258,6 +236,10 @@ public class UcBaseImageDecoder implements ImageDecoder {
         for (QueryInfo queryInfo : sQueryList) {
             ResultInfo resultInfo = this.getResultInfo(queryInfo, aFilePath);
 
+            if (null == resultInfo){
+                break;
+            }
+            
             if (resultInfo.isSuccess()) {
                 ret = this.getBitmap(resultInfo.getMediaType(), resultInfo.getId(),
                         aDecodingOptions);

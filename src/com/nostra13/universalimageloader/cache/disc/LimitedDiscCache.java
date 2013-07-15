@@ -25,7 +25,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.nostra13.universalimageloader.cache.disc.naming.FileNameGenerator;
-import com.nostra13.universalimageloader.core.DefaultConfigurationFactory;
 
 /**
  * Abstract disc cache limited by some parameter. If cache exceeds specified
@@ -44,17 +43,6 @@ public abstract class LimitedDiscCache extends BaseDiscCache {
 
     private final Map<File, Long> lastUsageDates = Collections
             .synchronizedMap(new HashMap<File, Long>());
-
-    /**
-     * @param cacheDir Directory for file caching. <b>Important:</b> Specify
-     *            separate folder for cached files. It's needed for right cache
-     *            limit work.
-     * @param sizeLimit Cache limit value. If cache exceeds this limit then file
-     *            with the most oldest last usage date will be deleted.
-     */
-    public LimitedDiscCache(File cacheDir, int sizeLimit) {
-        this(cacheDir, DefaultConfigurationFactory.createFileNameGenerator(), sizeLimit);
-    }
 
     /**
      * @param cacheDir Directory for file caching. <b>Important:</b> Specify
