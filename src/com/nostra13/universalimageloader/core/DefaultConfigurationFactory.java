@@ -28,6 +28,7 @@ import com.nostra13.universalimageloader.cache.memory.impl.LruMemoryCache;
 import com.nostra13.universalimageloader.core.assist.QueueProcessingType;
 import com.nostra13.universalimageloader.core.assist.deque.LIFOLinkedBlockingDeque;
 import com.nostra13.universalimageloader.core.decode.ImageDecoder;
+import com.nostra13.universalimageloader.core.decode.MainImageDecoder;
 import com.nostra13.universalimageloader.core.decode.UcBaseImageDecoder;
 import com.nostra13.universalimageloader.core.display.BitmapDisplayer;
 import com.nostra13.universalimageloader.core.display.SimpleBitmapDisplayer;
@@ -143,7 +144,7 @@ public class DefaultConfigurationFactory {
      * {@link UcBaseImageDecoder}
      */
     public static ImageDecoder createImageDecoder(boolean loggingEnabled) {
-        return new UcBaseImageDecoder(loggingEnabled);
+        return new MainImageDecoder();
     }
 
     /**

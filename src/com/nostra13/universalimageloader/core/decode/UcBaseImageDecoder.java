@@ -17,6 +17,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.provider.MediaStore;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -275,6 +276,8 @@ public class UcBaseImageDecoder implements ImageDecoder {
 
         Bitmap ret = null;
 
+        UCAssert.mustOk(new File(aApkPath).exists());
+
         PackageInfo packageInfo = CommonContext.getContext().getPackageManager()
                 .getPackageArchiveInfo(aApkPath, PackageManager.GET_ACTIVITIES);
 
@@ -335,42 +338,58 @@ public class UcBaseImageDecoder implements ImageDecoder {
     @Override
     public Bitmap decode(ImageDecodingInfo imageDecodingInfo) throws IOException {
 
+        String imageKey = imageDecodingInfo.getImageKey();
+
+        if (null == imageKey) {
+            return null;
+        }
+
+        if (imageKey.startsWith(Scheme.HTTP.name()) || imageKey.startsWith(Scheme.HTTPS.name())) {
+            BaseImageDecoder baseDecoder = new BaseImageDecoder();
+            return baseDecoder.decode(imageDecodingInfo);
+        }
+
         Bitmap ret = null;
+        try {
 
-        String filePath = Scheme.FILE.crop(imageDecodingInfo.getImageKey());
-        filePath = filePath.substring(0, filePath.lastIndexOf('_'));
+            String filePath = Scheme.FILE.crop(imageDecodingInfo.getImageKey());
+            filePath = filePath.substring(0, filePath.lastIndexOf('_'));
 
-        String filePathL = filePath.toLowerCase(Locale.getDefault());
+            String filePathL = filePath.toLowerCase(Locale.getDefault());
 
-        if (filePathL.endsWith(".apk")) {
-            ret = this.getApkIcon(filePath);
-        } else {
+            if (filePathL.endsWith(".apk")) {
+                ret = this.getApkIcon(filePath);
+            } else {
 
-            int[] requestSize = this.getRequestSizeByImageKey(imageDecodingInfo.getImageKey());
+                int[] requestSize = this.getRequestSizeByImageKey(imageDecodingInfo.getImageKey());
 
-            imageDecodingInfo.getDecodingOptions().inSampleSize = this.calculateInSampleSize(
-                    MINI_KIND_THUMBNAIL_IMAGE_WIDTH, MINI_KIND_THUMBNAIL_IMAGE_HEIGHT,
-                    requestSize[0], requestSize[1]);
+                imageDecodingInfo.getDecodingOptions().inSampleSize = this.calculateInSampleSize(
+                        MINI_KIND_THUMBNAIL_IMAGE_WIDTH, MINI_KIND_THUMBNAIL_IMAGE_HEIGHT,
+                        requestSize[0], requestSize[1]);
 
-            ret = this.getThumbnail(filePath, imageDecodingInfo.getDecodingOptions());
+                ret = this.getThumbnail(filePath, imageDecodingInfo.getDecodingOptions());
 
-            if (null == ret) {
-                if (filePathL.endsWith(".png") || filePathL.endsWith(".jpg")
-                        || filePathL.endsWith(".jpeg") || filePathL.endsWith(".gif")
-                        || filePathL.endsWith(".tif") || filePathL.endsWith(".bmp")
-                        || filePathL.endsWith(".webp")) {
+                if (null == ret) {
+                    if (filePathL.endsWith(".png") || filePathL.endsWith(".jpg")
+                            || filePathL.endsWith(".jpeg") || filePathL.endsWith(".gif")
+                            || filePathL.endsWith(".tif") || filePathL.endsWith(".bmp")
+                            || filePathL.endsWith(".webp")) {
 
-                    int[] bitmapSize = this.getBitmapSize(filePath);
+                        int[] bitmapSize = this.getBitmapSize(filePath);
 
-                    imageDecodingInfo.getDecodingOptions().inSampleSize = this
-                            .calculateInSampleSize(bitmapSize[0], bitmapSize[1], requestSize[0],
-                                    requestSize[1]);
+                        imageDecodingInfo.getDecodingOptions().inSampleSize = this
+                                .calculateInSampleSize(bitmapSize[0], bitmapSize[1],
+                                        requestSize[0], requestSize[1]);
 
-                    ret = BitmapFactory
-                            .decodeFile(filePath, imageDecodingInfo.getDecodingOptions());
+                        ret = BitmapFactory.decodeFile(filePath,
+                                imageDecodingInfo.getDecodingOptions());
 
+                    }
                 }
             }
+
+        } catch (Throwable e) {
+            e.printStackTrace();
         }
 
         return ret;

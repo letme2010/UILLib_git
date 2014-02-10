@@ -22,6 +22,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.widget.ImageView;
 
+import com.nostra13.universalimageloader.core.DisplayImageOptions.Builder;
 import com.nostra13.universalimageloader.core.assist.ImageLoadingListener;
 import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 import com.nostra13.universalimageloader.core.display.BitmapDisplayer;
@@ -95,10 +96,13 @@ public final class DisplayImageOptions {
 
     private final Handler handler;
 
+    private final boolean showWhenImageLoadingFinish;
+
     private DisplayImageOptions(Builder builder) {
         stubImage = builder.stubImage;
         imageForEmptyUri = builder.imageForEmptyUri;
         imageOnFail = builder.imageOnFail;
+        showWhenImageLoadingFinish = builder.showWhenImageLoadingFinish;
         resetViewBeforeLoading = builder.resetViewBeforeLoading;
         cacheInMemory = builder.cacheInMemory;
         cacheOnDisc = builder.cacheOnDisc;
@@ -110,6 +114,10 @@ public final class DisplayImageOptions {
         postProcessor = builder.postProcessor;
         displayer = builder.displayer;
         handler = builder.handler;
+    }
+
+    public boolean shouldShowImageWhenLoadFinish() {
+        return this.showWhenImageLoadingFinish;
     }
 
     public boolean shouldShowStubImage() {
@@ -198,6 +206,8 @@ public final class DisplayImageOptions {
      * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
      */
     public static class Builder {
+        public boolean showWhenImageLoadingFinish = true;
+
         private Drawable stubImage;
 
         private int imageForEmptyUri = 0;
@@ -251,6 +261,11 @@ public final class DisplayImageOptions {
          */
         public Builder showImageForEmptyUri(int imageRes) {
             imageForEmptyUri = imageRes;
+            return this;
+        }
+
+        public Builder setShowWhenImageLoadingFinish(boolean aBoolean) {
+            this.showWhenImageLoadingFinish = aBoolean;
             return this;
         }
 
@@ -381,6 +396,7 @@ public final class DisplayImageOptions {
             stubImage = options.stubImage;
             imageForEmptyUri = options.imageForEmptyUri;
             imageOnFail = options.imageOnFail;
+            showWhenImageLoadingFinish = options.showWhenImageLoadingFinish;
             resetViewBeforeLoading = options.resetViewBeforeLoading;
             cacheInMemory = options.cacheInMemory;
             cacheOnDisc = options.cacheOnDisc;
@@ -399,6 +415,7 @@ public final class DisplayImageOptions {
         public DisplayImageOptions build() {
             return new DisplayImageOptions(this);
         }
+
     }
 
     /**
