@@ -75,12 +75,6 @@ public class BaseImageDownloader implements ImageDownloader {
         this.readTimeout = DEFAULT_HTTP_READ_TIMEOUT;
     }
 
-    public BaseImageDownloader(Context context, int connectTimeout, int readTimeout) {
-        this.context = context.getApplicationContext();
-        this.connectTimeout = connectTimeout;
-        this.readTimeout = readTimeout;
-    }
-
     @Override
     public InputStream getStream(String imageUri, Object extra) throws IOException {
         switch (Scheme.ofUri(imageUri)) {
